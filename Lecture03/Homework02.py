@@ -1,3 +1,4 @@
+
 """
 Extend the REFLEX-AGENT-WITH-STATE program to have 4 locations (4 squares):
 * The agent should only sense and act on the square where it is located

@@ -9,7 +9,7 @@ class Node:  # Node has only PARENT_NODE, STATE, DEPTH
         path = [self]
         while current_node.PARENT_NODE:  # while current node has parent
             current_node = current_node.PARENT_NODE  # make parent the current node
-            path.append(current_node)   # add current node to path
+            path.append(current_node)  # add current node to path
         return path
 
     def display(self):
@@ -22,13 +22,15 @@ class Node:  # Node has only PARENT_NODE, STATE, DEPTH
 '''
 Search the tree for the goal state and return path from initial state to goal state
 '''
+
+
 def TREE_SEARCH():
     fringe = []
     initial_node = Node(INITIAL_STATE)
     fringe = INSERT(initial_node, fringe)
     while fringe is not None:
-        node = REMOVE_FIRST(fringe)
-        if node.STATE == GOAL_STATE:
+        node = REMOVE_LOWEST_HEURISTIC(fringe)
+        if node.STATE[1] == GOAL_HEURISTIC:
             return node.path()
         children = EXPAND(node)
         fringe = INSERT_ALL(children, fringe)
@@ -39,6 +41,8 @@ def TREE_SEARCH():
 Expands node and gets the successors (children) of that node.
 Return list of the successor nodes.
 '''
+
+
 def EXPAND(node):
     successors = []
     children = successor_fn(node.STATE)
@@ -54,13 +58,18 @@ def EXPAND(node):
 '''
 Insert node in to the queue (fringe).
 '''
+
+
 def INSERT(node, queue):
     queue.append(node)
     return queue
 
+
 '''
 Insert list of nodes into the fringe
 '''
+
+
 def INSERT_ALL(list, queue):
     queue.extend(list)
     return queue
@@ -69,32 +78,47 @@ def INSERT_ALL(list, queue):
 '''
 Removes and returns the first element from fringe
 '''
-def REMOVE_FIRST(queue):
-    return queue.pop(0)
+
+
+def REMOVE_LOWEST_HEURISTIC(queue):
+    lowest = queue[0]
+    for node in queue:
+        if node.STATE[1] <= lowest.STATE[1]:
+            lowest = node
+    queue.remove(lowest)
+    return lowest
+
 
 '''
 Successor function, mapping the nodes to its successors
 '''
+
+
 def successor_fn(state):  # Lookup list of successor states
     return STATE_SPACE[state]  # successor_fn( 'C' ) returns ['F', 'G']
 
 
-INITIAL_STATE = ('A', 'dirty', 'dirty')
-GOAL_STATE = ('A', 'clean', 'clean')
-STATE_SPACE = {('A', 'dirty', 'dirty'): [('A', 'clean', 'dirty'), ('B', 'dirty', 'dirty')],
-               ('A', 'clean', 'dirty'): [('B', 'clean', 'dirty')],
-               ('B', 'dirty', 'dirty'): [('A', 'dirty', 'dirty'), ('B', 'dirty', 'clean')],
-               ('B', 'clean', 'dirty'): [('B', 'clean', 'clean'), ('A', 'clean', 'dirty')],
-               ('B', 'dirty', 'clean'): [('A', 'dirty', 'clean')],
-               ('B', 'clean', 'clean'): [('A', 'clean', 'clean')],
-               ('A', 'dirty', 'clean'): [('A', 'clean', 'clean'), ('B', 'dirty', 'clean')],
-               ('A', 'clean', 'clean'): [] #goal state
-               }
-
+INITIAL_HEURISTIC = 6
+INITIAL_STATE = ('A', INITIAL_HEURISTIC)
+GOAL_HEURISTIC = 0
+STATE_SPACE = {('A', 6): [('B', 5), ('C', 5), ('D', 2)],
+               ('B', 5): [('F', 5), ('E', 4)],
+               ('C', 5): [('E', 4)],
+               ('D', 2): [('H', 1), ('I', 2), ('J', 1)],
+               ('E', 4): [('G', 4)],
+               ('F', 5): [('G', 4)],
+               ('G', 4): [('K', 0)],
+               ('H', 1): [('K', 0), ('L', 0)],
+               ('I', 2): [('H', 1)],
+               ('J', 1): [],
+               ('K', 0): [],
+               ('L', 0): []}
 
 '''
 Run tree search and display the nodes in the path to goal node
 '''
+
+
 def run():
     path = TREE_SEARCH()
     print('Solution path:')

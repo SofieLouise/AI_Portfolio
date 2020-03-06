@@ -1,7 +1,3 @@
-"""
-Needs to be fifo. Lifo will run endlessly
-"""
-
 class Node:  # Node has only PARENT_NODE, STATE, DEPTH
     def __init__(self, state, parent=None, depth=0):
         self.STATE = state
@@ -80,32 +76,19 @@ def REMOVE_FIRST(queue):
 Successor function, mapping the nodes to its successors
 '''
 def successor_fn(state):  # Lookup list of successor states
-    illegal_states = [
-        ('E', 'W', 'W', 'E'),  # wolf + goat alone
-        ('W', 'E', 'E', 'W'),  # wolf + goat alone
-        ('W', 'W', 'E', 'E'),  # cabbage + goat alone
-        ('E', 'E', 'W', 'W'),  # cabbage + goat alone
-    ]
-    return [x for x in STATE_SPACE[state] if x not in illegal_states]
+    return STATE_SPACE[state]  # successor_fn( 'C' ) returns ['F', 'G']
 
-# (farmer, wolf, goat, cabbage)
-INITIAL_STATE = ('W', 'W', 'W', 'W')
-GOAL_STATE = ('E', 'E', 'E', 'E')
-STATE_SPACE = {('W', 'W', 'W', 'W'): [('E', 'W', 'W', 'W'), ('E', 'E', 'W', 'W'), ('E', 'W', 'E', 'W'), ('E', 'W', 'W', 'E')],
-               ('E', 'W', 'W', 'W'): [('W', 'W', 'W', 'W')],
-               ('E', 'E', 'W', 'W'): [('W', 'E', 'W', 'W'), ('W', 'W', 'W', 'W')],
-               ('E', 'W', 'E', 'W'): [('W', 'W', 'E', 'W'), ('W', 'W', 'W', 'W')],
-               ('E', 'W', 'W', 'E'): [('W', 'W', 'W', 'E'),  ('W', 'W', 'W', 'W')],
-               ('W', 'E', 'W', 'W'): [('E', 'E', 'W', 'W'), ('E', 'E', 'E', 'W'), ('E', 'E', 'W', 'E')],
-               ('W', 'W', 'E', 'W'): [('E', 'W', 'E', 'W'), ('E', 'E', 'E', 'W'), ('E', 'W', 'E', 'E')],
-               ('W', 'W', 'W', 'E'): [('E', 'W', 'W', 'E'), ('E', 'E', 'W', 'E'), ('E', 'W', 'E', 'E')],
-               ('E', 'E', 'E', 'W'): [('W', 'E', 'E', 'W'), ('W', 'W', 'E', 'W'), ('W', 'E', 'W', 'W')],
-               ('E', 'E', 'W', 'E'): [('W', 'E', 'W', 'E'), ('W', 'W', 'W', 'E'), ('W', 'E', 'W', 'W')],
-               ('E', 'W', 'E', 'E'): [('W', 'W', 'E', 'E'), ('W', 'W', 'W', 'E'), ('W', 'W', 'E', 'W')],
-               ('W', 'E', 'E', 'W'): [('E', 'E', 'E', 'W'), ('E', 'E', 'E', 'E')],
-               ('W', 'E', 'W', 'E'): [('E', 'E', 'W', 'E'), ('E', 'E', 'E', 'E')], # solution
-               ('W', 'W', 'E', 'E'): [('E', 'W', 'E', 'E'), ('E', 'E', 'E', 'E')],
-               ('E', 'E', 'E', 'E'): [] #goal state
+
+INITIAL_STATE = ('A', 'dirty', 'dirty')
+GOAL_STATE = ('A', 'clean', 'clean')
+STATE_SPACE = {('A', 'dirty', 'dirty'): [('A', 'clean', 'dirty'), ('B', 'dirty', 'dirty')],
+               ('A', 'clean', 'dirty'): [('B', 'clean', 'dirty')],
+               ('B', 'dirty', 'dirty'): [('A', 'dirty', 'dirty'), ('B', 'dirty', 'clean')],
+               ('B', 'clean', 'dirty'): [('B', 'clean', 'clean'), ('A', 'clean', 'dirty')],
+               ('B', 'dirty', 'clean'): [('A', 'dirty', 'clean')],
+               ('B', 'clean', 'clean'): [('A', 'clean', 'clean')],
+               ('A', 'dirty', 'clean'): [('A', 'clean', 'clean'), ('B', 'dirty', 'clean')],
+               ('A', 'clean', 'clean'): [] #goal state
                }
 
 

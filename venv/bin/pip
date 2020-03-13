@@ -1,4 +1,4 @@
-#!"/Users/slm/OneDrive - Syddansk Universitet/Semester 4/Kunstig Intelligens/AI_Portfolio/venv/bin/python"
+#!"/Users/sofielouise/OneDrive - Syddansk Universitet/Semester 4/Kunstig Intelligens/AI_Portfolio/venv/bin/python"
 # EASY-INSTALL-ENTRY-SCRIPT: 'pip==19.0.3','console_scripts','pip'
 __requires__ = 'pip==19.0.3'
 import re

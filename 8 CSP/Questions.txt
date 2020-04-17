@@ -1,0 +1,31 @@
+1. What is returned by create_australia_csp()?
+    Returns a CSP object with information about Australia.
+    return CSP(variables, domains, neighbours, constraints)
+
+2. What is returned by backtracking_search()?
+    return self.recursive_backtracking({})
+    When self.isComplete it returns the complete assignment.
+
+3. What is the purpose of assignment variable?
+    It holds information about the variables currently assigned.
+
+4. What is the purpose of variable variable?
+    It holds a reference to the next variable which not in the assignment.
+
+5. What is the purpose of the following statement?
+    for value in self.order_domain_values(variable, assignment)
+    It returns all possible domain values for the variable.
+    For example. ['Red', 'Blue', 'Green'] for a state.
+
+6. What would the following do?
+    if self.is_consistent(var, value, {'Q': 'Red', 'NT': 'Blue', 'NSW': 'green'}):
+        assignment[variable] = value
+
+    It would assume that Q, NT and NSW are already assigned. Var is the first unassigned variable, which is 'WA'.
+    Value is the first color which is 'Red'. If this is consistent it would add or update the key 'WA' and the value 'Red'
+
+7. What would then assignment be?
+    {'WA': 'Red'}
+
+8. What is the effect of del assignment[variable]?
+    This deletes the key-value entry with the key variable.

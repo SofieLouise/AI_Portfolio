@@ -21,7 +21,7 @@ def minmax_decision(state):
 
     infinity = float('inf')
     action, state = argmax(successors_of(state), lambda a: min_value(a[1]))
-    return action
+    return state
 
 
 def is_terminal(state):
@@ -30,6 +30,7 @@ def is_terminal(state):
     :return: True if the state is a win.
     """
     return any(pile <= 2 for pile in state)
+
 
 def utility_of(state):
     """
@@ -121,7 +122,7 @@ def user_select_pile(list_of_piles):
 
 
 def main():
-    state = [7]
+    state = [15]
 
     while not is_terminal(state):
         state = user_select_pile(state)

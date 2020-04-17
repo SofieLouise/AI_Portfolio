@@ -32,15 +32,29 @@ def alpha_beta_decision(state):
 
 
 def is_terminal(state):
-    pass
+    return True if len([s for s in state if s > 2]) == 0 else False
 
 
 def utility_of(state):
-    pass
+    # if 1 and -1 are switched AI plays MIN
+    return 1 if len(state) % 2 == 0 else -1
 
 
 def successors_of(state):
-    pass
+    result = []
+    for i in state:
+        j = 1
+        k = i - 1
+        count = 0
+        while j < k:
+            statecopy = [o for o in state]
+            statecopy.remove(i)
+            statecopy.extend([k, j])
+            result.append(statecopy)
+            j += 1
+            count += 1
+            k -= 1
+    return result
 
 
 def argmax(iterable, func):
@@ -93,14 +107,18 @@ def user_select_pile(list_of_piles):
 
 
 def main():
-    state = [7]
-
+    # When the initial pile is over 20, it is possible to win with MAX.
+    state = [20]
+    current_player = ''
     while not is_terminal(state):
         state = user_select_pile(state)
+        current_player = 'you'
         if not is_terminal(state):
             state = computer_select_pile(state)
+            current_player = 'AI'
 
-    print("    Final state is {}".format(state))
+    print("    Final state is {}.".format(state))
+    print("    {} won.".format(current_player))
 
 
 if __name__ == '__main__':

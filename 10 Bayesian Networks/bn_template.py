@@ -209,6 +209,13 @@ class BayesianNetwork(object):
     # values is dictionary
     def get_joint_probability(self, values):
         """ return the joint probability of the Nodes """
+        # values ex:
+        #         'Damaged Tire': 'true',
+        #         'Electronics Malfunctioning': 'false',
+        #         'Fuel Tank Leaking': 'true',
+        #         'Vibrations': 'false'
+        for value in values:
+            variable = self.get_variable(value)
         pass
         # COMPLETE THIS FUNCTION
 
@@ -335,7 +342,7 @@ def print_marginal_probabilities(network):
             )
 
 
-def sprinkler():
+def car():
     # the values kept as dictionary
     t1 = {(): (0.5, 0.5)}
     t2 = {('false',): (0.5, 0.5), ('true',): (0.9, 0.1)}
@@ -346,45 +353,48 @@ def sprinkler():
         ('false', 'true'): (0.1, 0.9),
         ('true', 'true'): (0.01, 0.99)
     }
+    t5 = {}
+    t6 = {}
 
     # creation of Nodes objects
-    cloudy = Variable('Cloudy', ('false', 'true'), t1)
-    sprinkler = Variable('Sprinkler', ('false', 'true'), t2, [cloudy])
-    rain = Variable('Rain', ('false', 'true'), t3, [cloudy])
-    wetgrass = Variable('WetGrass', ('false', 'true'), t4, [sprinkler, rain])
+    dt = Variable('Damaged Tire', ('false', 'true'), t1)
+    em = Variable('Electronics Malfunctioning', ('false', 'true'), t2)
+    ftl = Variable('Fuel Tank Leaking', ('false', 'true'), t3)
+    v = Variable('Vibrations', ('false', 'true'), t4, [dt])
+    sms = Variable('Slow Max Speed', ('false', 'true'), t5, [dt, em])
+    hc = Variable('High Consumption', ('false', 'true'), t6, [dt, em, ftl])
 
-    variables = [cloudy, sprinkler, rain, wetgrass]
+    variables = [dt, em, ftl, v, sms, hc]
 
     # creation of Network
     network = BayesianNetwork()
     network.set_variables(variables)
 
     # pre-calculate marginals
-    # network.calculate_marginal_probabilities()
-
-    # print_marginal_probabilities(network)
+    network.calculate_marginal_probabilities()
+    print_marginal_probabilities(network)
 
     print('')
 
     joint_values = {
-        'Sprinkler': 'true',
-        'Cloudy': 'false',
-        'WetGrass': 'true',
-        'Rain': 'false'
+        'Damaged Tire': 'true',
+        'Electronics Malfunctioning': 'false',
+        'Fuel Tank Leaking': 'true',
+        'Vibrations': 'false'
     }
-    # print_joint_probability(network, joint_values)
+    print_joint_probability(network, joint_values)
 
     print('')
 
-    conditionals_vars = {'Sprinkler': 'true'}
-    conditionals_evidents = {'WetGrass': 'true'}
+    conditionals_vars = {'Damaged Tire': 'true'}
+    conditionals_evidents = {'Fuel Tank Leaking': 'true'}
 
-    # print_conditional_probability(network, conditionals_vars, conditionals_evidents)
+    print_conditional_probability(network, conditionals_vars, conditionals_evidents)
 
     print('')
 
-    # sample = create_random_sample(network)
-    # print_joint_probability(network, sample)
+    sample = create_random_sample(network)
+    print_joint_probability(network, sample)
 
 
-sprinkler()
+car()

@@ -7,7 +7,7 @@ def multiply_vector_elements(vector):
     """ return the multiplication of the vector elements """
 
     def mult(x, y):
-        return x*y
+        return x * y
 
     return functools.reduce(mult, vector, 1)
 
@@ -19,9 +19,19 @@ class Variable(object):
         """ Node initialization
             params:
             name: name of this random variable.
+                ex: 'Damaged Tire'
             assignments: possible values this variable can have.
+                ex: ('false', 'true')
             probability_table: the casual probability table of this variable.
+                ex:
+                {
+                ('false', 'false'): (1, 0),
+                ('true', 'false'): (0.1, 0.9),
+                ('false', 'true'): (0.1, 0.9),
+                ('true', 'true'): (0.01, 0.99)
+                }
             parents: list of references to this Node`s parents.
+                ex: [dt, em]
             children: list of references to this Node`s children.
         """
 
@@ -78,7 +88,7 @@ class Variable(object):
         """ read from the distribution table and return the probability of having a
             certain value (value) given the values of the parents.
             here the parents assignments can be partial
-            parent_vals is a dictionary: { parent: value }
+            parent_values is a dictionary: { parent: value }
         """
         res = 0
         given_parents_index = []
@@ -120,9 +130,79 @@ class Variable(object):
             return
 
         # COMPLETE THIS FUNCTION
-        # Set self.marginal_probabilities
+        # P(Y) = (P(Y|z_1) * P(z_1)) + (P(Y|z_2) * P(z_2)) ... + (P(Y|z_n) * P(z_n))
+        # Y = self, z = parent, n = parents
 
-        # set this Node`s state to ready
+        marginal_probabilities = len(self.assignments) * [0]
+
+        if self.parents:
+            parent_marginals = {}
+            for parent_assignment in self.parents[0].get_assignments():
+                parent_vector = []
+                for parent in self.parents:
+                    parent_vector.append(parent.get_marginal_probability(parent_assignment))
+                parent_marginals[parent_assignment] = (multiply_vector_elements(parent_vector))
+
+            # hard coded version up to 2 parents
+
+            for self_assignment in self.assignments:
+                number_of_parents = len(self.parents)
+
+                if number_of_parents == 1:
+                    for parent_assignment in self.parents[0].get_assignments():
+                        conditional_probability = self.get_probability(self_assignment, (parent_assignment,))
+                        parent_probability = parent_marginals[parent_assignment]
+                        marginal_probabilities[self.get_assignment_index(self_assignment)] += conditional_probability * parent_probability
+
+                if number_of_parents == 2:
+                    for parent_assignment_outer in self.parents[0].get_assignments():
+                        for parent_assignment_inner in self.parents[0].get_assignments():
+                            parents_assignments = (parent_assignment_outer, parent_assignment_inner,)
+                            parent_probability = parent_marginals[parent_assignment_outer] * parent_marginals[parent_assignment_inner]
+                            conditional_probability = self.get_probability(self_assignment, parents_assignments)
+                            marginal_probabilities[self.get_assignment_index(self_assignment)] += conditional_probability * parent_probability
+
+
+            # attempt at a generic solution. Issues with the for loop checking for too high numbers
+            # arr = len(self.parents) * [0]
+            # num_to_assignment_dic = {}
+            # count = 0
+            # for assignment in self.assignments:
+            #     num_to_assignment_dic[count] = assignment
+            #     count += 1
+            # for self_assignment in self.assignments:
+            #     for i in range(len(self.parents) ^ len(self.assignments)):
+            #         parent_probability = 1
+            #         parent_assignments = []
+            #         for element in arr:
+            #             parent_probability *= parent_marginals[num_to_assignment_dic[element]]
+            #             parent_assignments.append(num_to_assignment_dic[element])
+            #         conditional_probability = self.get_probability(self_assignment, tuple(parent_assignments))
+            #         marginal_probabilities[self.get_assignment_index(self_assignment)] += conditional_probability * parent_probability
+            #
+            #         num_assignments = len(self.assignments)
+            #
+            #         arr[len(arr) - 1] += 1
+            #         for j in range(0, len(arr)):
+            #             done = False
+            #             x = j
+            #             while not done:
+            #                 if arr[x] == num_assignments:  # hvis den når 3, er der ikke flere assignments
+            #                     arr[x] = 0
+            #                     arr[x - 1] += 1
+            #                     if arr[x - 1] < num_assignments:
+            #                         done = True
+            #                     else:
+            #                         x -= 1
+            #                 else:
+            #                     done = True
+
+        else:
+            for self_assignment in self.assignments:
+                marginal_probabilities[self.get_assignment_index(self_assignment)] += self.get_probability(self_assignment, ())
+
+        self.marginal_probabilities = marginal_probabilities
+
         self.ready = True
 
     def get_marginal_probability(self, val):
@@ -158,9 +238,9 @@ class BayesianNetwork(object):
 
     def __init__(self):
         """ Initialize connectivity matrix. """
-        self.variables = []     # list of variables (Nodes)
-        self.varsMap = {}       # a mapping of variable name to the actual node, for easy access
-        self.ready = False          # indication of this net state
+        self.variables = []  # list of variables (Nodes)
+        self.varsMap = {}  # a mapping of variable name to the actual node, for easy access
+        self.ready = False  # indication of this net state
 
     def calculate_marginal_probabilities(self):
         """ pre-calculate and stores the marginal probabilities of all the nodes """
@@ -214,12 +294,20 @@ class BayesianNetwork(object):
         #         'Electronics Malfunctioning': 'false',
         #         'Fuel Tank Leaking': 'true',
         #         'Vibrations': 'false'
+        result = 1
         for value in values:
             variable = self.get_variable(value)
-        pass
-        # COMPLETE THIS FUNCTION
+            parent_values = []
+            for parent in variable.parents:
+                parent_values.append(values[parent.name])
+            if parent_values:
+                probability = variable.get_probability(values[value], tuple(parent_values))
+            else:
+                probability = variable.get_probability(values[value], ())
+            result *= probability
 
         # Return join probability
+        return result
 
     def get_conditional_probability(self, values, evidents):
         """ returns the conditional probability.
@@ -265,13 +353,16 @@ class BayesianNetwork(object):
                 k = list(values.keys())[0]
                 complementary_conditional_values = values.copy()
                 complementary_conditional_values[k] = 'false' if values[k] == 'true' else 'true'
-                marginal_of_evidents = marginal_of_evidents * self.varsMap[child].get_conditional_probability(c_val, complementary_conditional_values)
+                marginal_of_evidents = marginal_of_evidents * self.varsMap[child].get_conditional_probability(c_val,
+                                                                                                              complementary_conditional_values)
 
                 # print("Child: {}".format(child))
                 # print("    Given: {}".format(complementary_conditional_values))
 
             # uses Bayes rule, for calculating the conditional probability
-            res = (joint_conditional_children * joint_marginal_parents) / ((joint_conditional_children * joint_marginal_parents) + marginal_of_evidents * (1 - joint_marginal_parents))
+            res = (joint_conditional_children * joint_marginal_parents) / (
+                    (joint_conditional_children * joint_marginal_parents) + marginal_of_evidents * (
+                    1 - joint_marginal_parents))
 
         return res
 
@@ -353,18 +444,14 @@ def car():
         ('false', 'true'): (0.1, 0.9),
         ('true', 'true'): (0.01, 0.99)
     }
-    t5 = {}
-    t6 = {}
 
     # creation of Nodes objects
-    dt = Variable('Damaged Tire', ('false', 'true'), t1)
-    em = Variable('Electronics Malfunctioning', ('false', 'true'), t2)
-    ftl = Variable('Fuel Tank Leaking', ('false', 'true'), t3)
-    v = Variable('Vibrations', ('false', 'true'), t4, [dt])
-    sms = Variable('Slow Max Speed', ('false', 'true'), t5, [dt, em])
-    hc = Variable('High Consumption', ('false', 'true'), t6, [dt, em, ftl])
+    cloudy = Variable('Cloudy', ('false', 'true'), t1)
+    sprinkler = Variable('Sprinkler', ('false', 'true'), t2, [cloudy])
+    rain = Variable('Rain', ('false', 'true'), t3, [cloudy])
+    wetgrass = Variable('WetGrass', ('false', 'true'), t4, [sprinkler, rain])
 
-    variables = [dt, em, ftl, v, sms, hc]
+    variables = [cloudy, sprinkler, rain, wetgrass]
 
     # creation of Network
     network = BayesianNetwork()
@@ -372,22 +459,23 @@ def car():
 
     # pre-calculate marginals
     network.calculate_marginal_probabilities()
+
     print_marginal_probabilities(network)
 
     print('')
 
     joint_values = {
-        'Damaged Tire': 'true',
-        'Electronics Malfunctioning': 'false',
-        'Fuel Tank Leaking': 'true',
-        'Vibrations': 'false'
+        'Sprinkler': 'true',
+        'Cloudy': 'false',
+        'WetGrass': 'true',
+        'Rain': 'false'
     }
     print_joint_probability(network, joint_values)
 
     print('')
 
-    conditionals_vars = {'Damaged Tire': 'true'}
-    conditionals_evidents = {'Fuel Tank Leaking': 'true'}
+    conditionals_vars = {'Sprinkler': 'true'}
+    conditionals_evidents = {'WetGrass': 'true'}
 
     print_conditional_probability(network, conditionals_vars, conditionals_evidents)
 
@@ -395,6 +483,61 @@ def car():
 
     sample = create_random_sample(network)
     print_joint_probability(network, sample)
+
+    # # the values kept as dictionary
+    # t1 = {(): (0.3, 0.7)}
+    # t2 = {(): (0.2, 0.8)}
+    # t3 = {(): (0.3, 0.7)}
+    # t4 = {
+    #     ('true'): (0.05, 0.6),
+    #     ('false'): (0.3, 0.7)
+    # }
+    # t5 = {('true', 'true'): (0.9, 0.8),
+    #       ('true', 'false'): (0.3, 0.2),
+    #       ('false', 'true'): (0.6, 0.5),
+    #       ('false', 'false'): (0.1, 0.01)
+    #       }
+    # t6 = {(): (0.7, 0.1)}
+    #
+    # # creation of Nodes objects
+    # dt = Variable('Damaged Tire', ('false', 'true'), t1)
+    # ftl = Variable('Fuel Tank Leaking', ('false', 'true'), t2)
+    # em = Variable('Electronics Malfunctioning', ('false', 'true'), t3)
+    # sms = Variable('Slow Max Speed', ('false', 'true'), t4, [dt, em])
+    # hc = Variable('High Consumption', ('false', 'true'), t5, [dt, em, ftl])
+    # v = Variable('Vibrations', ('false', 'true'), t6, [dt])
+    #
+    # variables = [dt, em, ftl, v, sms, hc]
+    #
+    # # creation of Network
+    # network = BayesianNetwork()
+    # network.set_variables(variables)
+    #
+    # # pre-calculate marginals
+    # network.calculate_marginal_probabilities()
+    # print_marginal_probabilities(network)
+    #
+    # print('')
+    #
+    # joint_values = {
+    #     'Damaged Tire': 'true',
+    #     'Electronics Malfunctioning': 'false',
+    #     'Fuel Tank Leaking': 'true',
+    #     'Vibrations': 'false'
+    # }
+    # print_joint_probability(network, joint_values)
+    #
+    # print('')
+    #
+    # conditionals_vars = {'Damaged Tire': 'true'}
+    # conditionals_evidents = {'Fuel Tank Leaking': 'true'}
+    #
+    # print_conditional_probability(network, conditionals_vars, conditionals_evidents)
+    #
+    # print('')
+    #
+    # sample = create_random_sample(network)
+    # print_joint_probability(network, sample)
 
 
 car()

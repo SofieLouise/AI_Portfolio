@@ -435,23 +435,36 @@ def print_marginal_probabilities(network):
 
 def car():
     # the values kept as dictionary
-    t1 = {(): (0.5, 0.5)}
-    t2 = {('false',): (0.5, 0.5), ('true',): (0.9, 0.1)}
-    t3 = {('false',): (0.8, 0.2), ('true',): (0.2, 0.8)}
+    t1 = {(): (0.7, 0.3)}
+    t2 = {(): (0.8, 0.2)}
+    t3 = {(): (0.7, 0.3)}
     t4 = {
-        ('false', 'false'): (1, 0),
-        ('true', 'false'): (0.1, 0.9),
-        ('false', 'true'): (0.1, 0.9),
-        ('true', 'true'): (0.01, 0.99)
+        ('false', 'false'): (0.3, 0.7),
+        ('true', 'false'): (0.4, 0.6),
+        ('false', 'true'): (0.7, 0.3),
+        ('true', 'true'): (0.95, 0.05)
     }
+    t5 = {
+        ('true', 'true', 'true'): (0.1, 0.9),
+        ('true', 'true', 'false'): (0.2, 0.8),
+        ('true', 'false', 'true'): (0.7, 0.3),
+        ('true', 'false', 'false'): (0.8, 0.2),
+        ('false', 'true', 'true'): (0.4, 0.6),
+        ('false', 'true', 'false'): (0.5, 0.5),
+        ('false', 'false', 'true'): (0.9, 0.1),
+        ('false', 'false', 'false'): (0.99, 0.01)
+    }
+    t6 = {('false',): (0.9, 0.1), ('true',): (0.3, 0.7)}
 
     # creation of Nodes objects
-    cloudy = Variable('Cloudy', ('false', 'true'), t1)
-    sprinkler = Variable('Sprinkler', ('false', 'true'), t2, [cloudy])
-    rain = Variable('Rain', ('false', 'true'), t3, [cloudy])
-    wetgrass = Variable('WetGrass', ('false', 'true'), t4, [sprinkler, rain])
+    dt = Variable('Damaged Tire', ('false', 'true'), t1)
+    ftl = Variable('Fuel Tank Leaking', ('false', 'true'), t2)
+    em = Variable('Electronics Malfunctioning', ('false', 'true'), t3)
+    sms = Variable('Slow Max Speed', ('false', 'true'), t4, [dt, em])
+    hc = Variable('High Consumption', ('false', 'true'), t5, [dt, em, ftl])
+    v = Variable('Vibrations', ('false', 'true'), t6, [dt])
 
-    variables = [cloudy, sprinkler, rain, wetgrass]
+    variables = [dt, em, ftl, v, sms, hc]
 
     # creation of Network
     network = BayesianNetwork()
@@ -459,23 +472,22 @@ def car():
 
     # pre-calculate marginals
     network.calculate_marginal_probabilities()
-
     print_marginal_probabilities(network)
 
     print('')
 
     joint_values = {
-        'Sprinkler': 'true',
-        'Cloudy': 'false',
-        'WetGrass': 'true',
-        'Rain': 'false'
+        'Damaged Tire': 'true',
+        'Electronics Malfunctioning': 'false',
+        'Fuel Tank Leaking': 'true',
+        'Vibrations': 'false'
     }
     print_joint_probability(network, joint_values)
 
     print('')
 
-    conditionals_vars = {'Sprinkler': 'true'}
-    conditionals_evidents = {'WetGrass': 'true'}
+    conditionals_vars = {'Damaged Tire': 'true'}
+    conditionals_evidents = {'Fuel Tank Leaking': 'true'}
 
     print_conditional_probability(network, conditionals_vars, conditionals_evidents)
 
@@ -483,61 +495,6 @@ def car():
 
     sample = create_random_sample(network)
     print_joint_probability(network, sample)
-
-    # # the values kept as dictionary
-    # t1 = {(): (0.3, 0.7)}
-    # t2 = {(): (0.2, 0.8)}
-    # t3 = {(): (0.3, 0.7)}
-    # t4 = {
-    #     ('true'): (0.05, 0.6),
-    #     ('false'): (0.3, 0.7)
-    # }
-    # t5 = {('true', 'true'): (0.9, 0.8),
-    #       ('true', 'false'): (0.3, 0.2),
-    #       ('false', 'true'): (0.6, 0.5),
-    #       ('false', 'false'): (0.1, 0.01)
-    #       }
-    # t6 = {(): (0.7, 0.1)}
-    #
-    # # creation of Nodes objects
-    # dt = Variable('Damaged Tire', ('false', 'true'), t1)
-    # ftl = Variable('Fuel Tank Leaking', ('false', 'true'), t2)
-    # em = Variable('Electronics Malfunctioning', ('false', 'true'), t3)
-    # sms = Variable('Slow Max Speed', ('false', 'true'), t4, [dt, em])
-    # hc = Variable('High Consumption', ('false', 'true'), t5, [dt, em, ftl])
-    # v = Variable('Vibrations', ('false', 'true'), t6, [dt])
-    #
-    # variables = [dt, em, ftl, v, sms, hc]
-    #
-    # # creation of Network
-    # network = BayesianNetwork()
-    # network.set_variables(variables)
-    #
-    # # pre-calculate marginals
-    # network.calculate_marginal_probabilities()
-    # print_marginal_probabilities(network)
-    #
-    # print('')
-    #
-    # joint_values = {
-    #     'Damaged Tire': 'true',
-    #     'Electronics Malfunctioning': 'false',
-    #     'Fuel Tank Leaking': 'true',
-    #     'Vibrations': 'false'
-    # }
-    # print_joint_probability(network, joint_values)
-    #
-    # print('')
-    #
-    # conditionals_vars = {'Damaged Tire': 'true'}
-    # conditionals_evidents = {'Fuel Tank Leaking': 'true'}
-    #
-    # print_conditional_probability(network, conditionals_vars, conditionals_evidents)
-    #
-    # print('')
-    #
-    # sample = create_random_sample(network)
-    # print_joint_probability(network, sample)
 
 
 car()

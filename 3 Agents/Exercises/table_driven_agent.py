@@ -2,6 +2,7 @@ A = 'A'
 B = 'B'
 
 percepts = []
+# The table matches the percept sequences with an action
 table = {
     ((A, 'Clean'),): 'Right',
     ((A, 'Dirty'),): 'Suck',
@@ -35,5 +36,12 @@ def run():  # run agent on several sequential percepts
     print(TABLE_DRIVEN_AGENT((B, 'Clean')), '\t', percepts)
     print(TABLE_DRIVEN_AGENT((B, 'Clean')), '\t', percepts)
 
+    # Output:
+    # Action	Percepts
+    # Right 	[('A', 'Clean')]
+    # Suck 	    [('A', 'Clean'), ('A', 'Dirty')]
+    # Left 	    [('A', 'Clean'), ('A', 'Dirty'), ('B', 'Clean')]
+    # None 	    [('A', 'Clean'), ('A', 'Dirty'), ('B', 'Clean'), ('B', 'Clean')]
+    # The last is None because we have no entry for the history in the table
 
 run()

@@ -1,10 +1,11 @@
 """
 REFLEX-VACUUM-AGENT.
 
-Extend the REFLEX-VACUUM-AGENT program to have 4 locations (4 squares):
- * The agent should only sense and act on the square where it is located.
- * Allow any starting square
- * Use run (20) test and display results.
+* Maintains internal state that depends upon percept history.
+* Has a model for how the world works
+* Model needs 2 types of info:
+    - How environment changes - not dependent on the agent (dirty square stays dirty)
+    - How action from the agent affect environment (suck cleans)
 """
 
 A = 'A'
@@ -13,6 +14,7 @@ C = 'C'
 D = 'D'
 state = {}
 action = None
+# Model is used to update history. Initially empty. Used to change state, when A == B == 'Clean'
 model = {A: None, B: None, C: None, D: None}
 
 RULE_ACTION = {
@@ -24,6 +26,7 @@ RULE_ACTION = {
     6: 'NoOp'
 }
 
+# Maps conditions to rules
 rules = {
     (A, 'Dirty'): 1,
     (B, 'Dirty'): 1,
@@ -56,6 +59,7 @@ def RULE_MATCH(state, rules):
 def UPDATE_STATE(state, action, percept):
     (location, status) = percept
     state = percept
+    # Model is used to change state, when A == B == ... == 'Clean'
     if model[A] == model[B] == model[C] == model[D] == 'Clean':
         state = (A, B, C, D, 'Clean')
     model[location] = status
@@ -63,6 +67,8 @@ def UPDATE_STATE(state, action, percept):
 
 
 def REFLEX_AGENT_WITH_STATE(percept):  # Determine action
+    # state: current world state
+    # action: most recent action - none initially
     global state, action
     state = UPDATE_STATE(state, action, percept)
     rule = RULE_MATCH(state, rules)

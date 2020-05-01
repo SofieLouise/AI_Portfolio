@@ -1,5 +1,5 @@
-import random, math
-from Lecture06 import queens_fitness
+import random
+import queens_fitness
 
 p_mutation = 0.2
 num_of_generations = 30

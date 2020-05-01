@@ -1,6 +1,7 @@
 A = 'A'
 B = 'B'
 
+# Maps rules to actions
 RULE_ACTION = {
     1: 'Suck',
     2: 'Right',
@@ -8,6 +9,7 @@ RULE_ACTION = {
     4: 'NoOp'
 }
 
+# Maps conditions to rules
 rules = {
     (A, 'Dirty'): 1,
     (B, 'Dirty'): 1,

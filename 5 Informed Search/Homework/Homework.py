@@ -74,7 +74,7 @@ Insert list of nodes into the fringe
 
 
 def INSERT_ALL(list, queue):
-    return list + queue
+    return queue + list
 
 
 '''
@@ -144,8 +144,7 @@ COST_SPACE = {
     ('I', 'L'): 3,
     ('H', 'L'): 5,
     ('H', 'K'): 6,
-    ('G', 'K'): 6
-}
+    ('G', 'K'): 6}
 
 '''
 Run tree search and display the nodes in the path to goal node

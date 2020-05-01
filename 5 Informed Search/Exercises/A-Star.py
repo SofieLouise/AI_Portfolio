@@ -34,8 +34,8 @@ def TREE_SEARCH():
     initial_node = Node(INITIAL_STATE)
     fringe = INSERT(initial_node, fringe)
     while fringe is not None:
-        node = REMOVE_LOWEST_PATH_PLUS_HEURISTIC(fringe)
-        if node.STATE[1] == GOAL_HEURISTIC:
+        node = REMOVE_LOWEST_PATH_AND_HEURISTIC(fringe)
+        if node.STATE[1] == GOAL_STATE:
             return node.path()
         children = EXPAND(node)
         fringe = INSERT_ALL(children, fringe)
@@ -66,8 +66,7 @@ Insert node in to the queue (fringe).
 
 
 def INSERT(node, queue):
-    queue.append(node)
-    return queue
+    return queue + [node]
 
 
 '''
@@ -84,26 +83,30 @@ Removes and returns the first element from fringe
 '''
 
 
-def calculatePathCost(path):
-    cost = 0
-    for i in range(len(path)):
-        # ('A','B')
-        if i < len(path) - 1:
-            cost += COST_SPACE.get((path[i + 1].STATE[0], path[i].STATE[0]))
-    return cost
-
-
-def REMOVE_LOWEST_PATH_PLUS_HEURISTIC(queue):
+def REMOVE_LOWEST_PATH_AND_HEURISTIC(queue):
     lowest = queue[0]
-    lowest_f = lowest.STATE[1] + calculatePathCost(lowest.path())
+    lowest_f = lowest.STATE[1] + calculate_path(lowest.path())
     for node in queue:
-        path_cost = calculatePathCost(node.path())
-        f = node.STATE[1] + path_cost
+        path_cost = calculate_path(node.path())
+        f = path_cost + node.STATE[1]
         if f <= lowest_f:
             lowest = node
             lowest_f = f
     queue.remove(lowest)
     return lowest
+
+
+"""
+Calculates the path cost
+"""
+
+
+def calculate_path(path):
+    cost = 0
+    for i in range(len(path)):
+        if i < len(path) - 1:
+            cost += COST_SPACE.get((path[i + 1].STATE[0], path[i].STATE[0]))
+    return cost
 
 
 '''
@@ -115,18 +118,19 @@ def successor_fn(state):  # Lookup list of successor states
     return STATE_SPACE[state]  # successor_fn( 'C' ) returns ['F', 'G']
 
 
-INITIAL_HEURISTIC = 6
-INITIAL_STATE = ('A', INITIAL_HEURISTIC)
-GOAL_HEURISTIC = 0
-STATE_SPACE = {('A', 6): [('B', 5), ('C', 5), ('D', 2)],
+INITIAL_STATE = ('A', 6)
+
+GOAL_STATE = 0
+
+STATE_SPACE = {INITIAL_STATE: [('B', 5), ('C', 5), ('D', 2)],
                ('B', 5): [('F', 5), ('E', 4)],
                ('C', 5): [('E', 4)],
                ('D', 2): [('H', 1), ('I', 2), ('J', 1)],
-               ('E', 4): [('G', 4)],
                ('F', 5): [('G', 4)],
+               ('E', 4): [('G', 4), ('H', 1)],
+               ('I', 2): [('L', 0)],
                ('G', 4): [('K', 0)],
                ('H', 1): [('K', 0), ('L', 0)],
-               ('I', 2): [('H', 1)],
                ('J', 1): [],
                ('K', 0): [],
                ('L', 0): []}
@@ -147,8 +151,7 @@ COST_SPACE = {
     ('I', 'L'): 3,
     ('H', 'L'): 5,
     ('H', 'K'): 6,
-    ('G', 'K'): 6
-}
+    ('G', 'K'): 6}
 
 '''
 Run tree search and display the nodes in the path to goal node
